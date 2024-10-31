@@ -1,0 +1,54 @@
+---
+# Source: my-app-chart/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-registry-secret
+  namespace: staging
+  labels:
+    app: pongsit-app-cicd-app
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJza2xwb25nc2l0IiwicGFzc3dvcmQiOiJqQ0wxNTlDbnJJcnUiLCJlbWFpbCI6InBvbmdzaXRAc2tpbGxsYW5lLmNvbSIsImF1dGgiOiJjMnRzY0c5dVozTnBkRHBxUTB3eE5UbERibkpKY25VPSJ9fX0=
+type: kubernetes.io/dockerconfigjson
+---
+# Source: my-app-chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pongsit-app-cicd-service
+  namespace: staging 
+spec:
+  selector:
+    app: pongsit-app-cicd-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Source: my-app-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pongsit-app-cicd-app
+  namespace: staging 
+  labels:
+    app: pongsit-app-cicd-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pongsit-app-cicd-app
+  template:
+    metadata:
+      labels:
+        app: pongsit-app-cicd-app
+    spec:
+      containers:
+      - name: my-app-container
+        image: "sklpongsit/poc-ci-cd:main-6c2c078"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: my-registry-secret
